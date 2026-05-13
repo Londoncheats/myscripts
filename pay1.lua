@@ -52,7 +52,6 @@ cycleLabel.Font = Enum.Font.GothamBold
 cycleLabel.TextSize = 12
 cycleLabel.Parent = frame
 
--- Start button
 local startBtn = Instance.new("TextButton")
 startBtn.Size = UDim2.new(1, -20, 0, 40)
 startBtn.Position = UDim2.new(0, 10, 0, 80)
@@ -65,7 +64,6 @@ startBtn.BorderSizePixel = 0
 startBtn.Parent = frame
 Instance.new("UICorner", startBtn).CornerRadius = UDim.new(0, 8)
 
--- Stop button
 local stopBtn = Instance.new("TextButton")
 stopBtn.Size = UDim2.new(1, -20, 0, 40)
 stopBtn.Position = UDim2.new(0, 10, 0, 130)
@@ -78,7 +76,6 @@ stopBtn.BorderSizePixel = 0
 stopBtn.Parent = frame
 Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0, 8)
 
--- Send /pay 1
 local function sendPayChat()
     pcall(function()
         local TextChatService = game:GetService("TextChatService")
@@ -98,7 +95,6 @@ local function sendPayChat()
     end)
 end
 
--- Open safe
 local function openSafe()
     status.Text = "🔓 Opening safe..."
     status.TextColor3 = Color3.fromRGB(0, 255, 128)
@@ -109,27 +105,27 @@ local function openSafe()
             :WaitForChild("ProximityPrompt")
         Events:WaitForChild("OpenSafe"):FireServer(prompt)
     end)
+    task.wait(2)
 end
 
--- Put money IN safe
 local function depositMoney()
     status.Text = "💰 Putting money in..."
     status.TextColor3 = Color3.fromRGB(0, 120, 255)
     pcall(function()
         Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "In")
     end)
+    task.wait(1)
 end
 
--- Take money OUT of safe
 local function withdrawMoney()
     status.Text = "💸 Taking money out..."
     status.TextColor3 = Color3.fromRGB(255, 100, 0)
     pcall(function()
         Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "Out")
     end)
+    task.wait(1)
 end
 
--- Start button
 startBtn.MouseButton1Click:Connect(function()
     if isRunning then return end
     isRunning = true
@@ -138,34 +134,26 @@ startBtn.MouseButton1Click:Connect(function()
 
     task.spawn(function()
         while isRunning do
-            -- Step 1: Open safe
-            openSafe()
-            task.wait(2) -- 2 sec cooldown after opening safe
+            openSafe()      -- open safe then waits 2 seconds
+            withdrawMoney() -- take money out then waits 1 second
+            depositMoney()  -- put money in then waits 1 second
+            withdrawMoney() -- take money out again then waits 1 second
 
-            -- Step 2: Withdraw first
-            withdrawMoney()
-
-            -- Step 3: Deposit
-            depositMoney()
-
-            -- Step 4: Withdraw again
-            withdrawMoney()
-
-            -- Step 5: Send /pay 1 x4
             status.Text = "💬 Sending /pay 1..."
             status.TextColor3 = Color3.fromRGB(180, 180, 180)
             for i = 1, 4 do
                 if not isRunning then break end
                 sendPayChat()
+                task.wait(0.3)
             end
 
             totalCycles = totalCycles + 1
             cycleLabel.Text = "Cycles: " .. totalCycles
+            task.wait(1)
         end
     end)
 end)
 
--- Stop button
 stopBtn.MouseButton1Click:Connect(function()
     isRunning = false
     startBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
