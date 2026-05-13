@@ -37,7 +37,7 @@ status.Size = UDim2.new(1, -20, 0, 20)
 status.Position = UDim2.new(0, 10, 0, 30)
 status.BackgroundTransparency = 1
 status.TextColor3 = Color3.fromRGB(180, 180, 180)
-status.Text = "Ready - ID: " .. userId
+status.Text = "Ready"
 status.Font = Enum.Font.Gotham
 status.TextSize = 11
 status.Parent = frame
@@ -101,6 +101,7 @@ end
 -- Open safe
 local function openSafe()
     status.Text = "🔓 Opening safe..."
+    status.TextColor3 = Color3.fromRGB(0, 255, 128)
     pcall(function()
         local prompt = workspace:WaitForChild("Safes")
             :WaitForChild("Safe")
@@ -113,6 +114,7 @@ end
 -- Put money IN safe
 local function depositMoney()
     status.Text = "💰 Putting money in..."
+    status.TextColor3 = Color3.fromRGB(0, 120, 255)
     pcall(function()
         Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "In")
     end)
@@ -121,12 +123,13 @@ end
 -- Take money OUT of safe
 local function withdrawMoney()
     status.Text = "💸 Taking money out..."
+    status.TextColor3 = Color3.fromRGB(255, 100, 0)
     pcall(function()
         Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "Out")
     end)
 end
 
--- Main auto farm loop
+-- Start button
 startBtn.MouseButton1Click:Connect(function()
     if isRunning then return end
     isRunning = true
@@ -135,12 +138,22 @@ startBtn.MouseButton1Click:Connect(function()
 
     task.spawn(function()
         while isRunning do
+            -- Step 1: Open safe
             openSafe()
-            withdrawMoney() -- take money out first
-            depositMoney()  -- put it back in
-            withdrawMoney() -- take it out again
+            task.wait(2) -- 2 sec cooldown after opening safe
 
-            -- Send /pay 1 x4
+            -- Step 2: Withdraw first
+            withdrawMoney()
+
+            -- Step 3: Deposit
+            depositMoney()
+
+            -- Step 4: Withdraw again
+            withdrawMoney()
+
+            -- Step 5: Send /pay 1 x4
+            status.Text = "💬 Sending /pay 1..."
+            status.TextColor3 = Color3.fromRGB(180, 180, 180)
             for i = 1, 4 do
                 if not isRunning then break end
                 sendPayChat()
@@ -152,7 +165,7 @@ startBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- Stop
+-- Stop button
 stopBtn.MouseButton1Click:Connect(function()
     isRunning = false
     startBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
