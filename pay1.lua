@@ -3,6 +3,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local RS = game:GetService("ReplicatedStorage")
 local Events = RS:WaitForChild("Events")
+local userId = tostring(player.UserId)
 
 local isRunning = false
 local totalCycles = 0
@@ -36,9 +37,9 @@ status.Size = UDim2.new(1, -20, 0, 20)
 status.Position = UDim2.new(0, 10, 0, 30)
 status.BackgroundTransparency = 1
 status.TextColor3 = Color3.fromRGB(180, 180, 180)
-status.Text = "Ready"
+status.Text = "Ready - ID: " .. userId
 status.Font = Enum.Font.Gotham
-status.TextSize = 12
+status.TextSize = 11
 status.Parent = frame
 
 local cycleLabel = Instance.new("TextLabel")
@@ -100,7 +101,6 @@ end
 -- Open safe
 local function openSafe()
     status.Text = "🔓 Opening safe..."
-    status.TextColor3 = Color3.fromRGB(0, 255, 128)
     pcall(function()
         local prompt = workspace:WaitForChild("Safes")
             :WaitForChild("Safe")
@@ -108,27 +108,22 @@ local function openSafe()
             :WaitForChild("ProximityPrompt")
         Events:WaitForChild("OpenSafe"):FireServer(prompt)
     end)
-    task.wait(1)
 end
 
 -- Put money IN safe
 local function depositMoney()
     status.Text = "💰 Putting money in..."
-    status.TextColor3 = Color3.fromRGB(0, 120, 255)
     pcall(function()
-        Events:WaitForChild("Safe"):FireServer("Small Cash", "17786532511854", "In")
+        Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "In")
     end)
-    task.wait(1)
 end
 
 -- Take money OUT of safe
 local function withdrawMoney()
     status.Text = "💸 Taking money out..."
-    status.TextColor3 = Color3.fromRGB(255, 100, 0)
     pcall(function()
-        Events:WaitForChild("Safe"):FireServer("Small Cash", "17786532511854", "Out")
+        Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "Out")
     end)
-    task.wait(1)
 end
 
 -- Main auto farm loop
@@ -140,31 +135,19 @@ startBtn.MouseButton1Click:Connect(function()
 
     task.spawn(function()
         while isRunning do
-            -- Step 1: Open safe
             openSafe()
-            task.wait(1)
+            withdrawMoney() -- take money out first
+            depositMoney()  -- put it back in
+            withdrawMoney() -- take it out again
 
-            -- Step 2: Put money in
-            depositMoney()
-            task.wait(1)
-
-            -- Step 3: Take money out
-            withdrawMoney()
-            task.wait(1)
-
-            -- Step 4: Send /pay 1 x4
-            status.Text = "💬 Sending /pay 1..."
-            status.TextColor3 = Color3.fromRGB(180, 180, 180)
+            -- Send /pay 1 x4
             for i = 1, 4 do
                 if not isRunning then break end
                 sendPayChat()
-                task.wait(0.5)
             end
 
-            -- Update cycle count
             totalCycles = totalCycles + 1
             cycleLabel.Text = "Cycles: " .. totalCycles
-            task.wait(1)
         end
     end)
 end)
