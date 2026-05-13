@@ -2,8 +2,9 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-local payCount = 0
-local REQUIRED = 4
+local playerGui = player:WaitForChild("PlayerGui")
+
+local isRunning = false
 
 -- Create GUI
 local screenGui = Instance.new("ScreenGui")
@@ -27,7 +28,7 @@ button.Size = UDim2.new(1, -20, 0, 40)
 button.Position = UDim2.new(0, 10, 0, 10)
 button.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Text = "Click to /pay 1 (0/4)"
+button.Text = "Auto /pay 1 x4"
 button.Font = Enum.Font.GothamBold
 button.TextSize = 16
 button.BorderSizePixel = 0
@@ -42,42 +43,58 @@ status.Size = UDim2.new(1, -20, 0, 20)
 status.Position = UDim2.new(0, 10, 0, 55)
 status.BackgroundTransparency = 1
 status.TextColor3 = Color3.fromRGB(180, 180, 180)
-status.Text = "Press 4 times to trigger"
+status.Text = "Click button to auto send"
 status.Font = Enum.Font.Gotham
 status.TextSize = 12
 status.Parent = frame
 
--- Function to actually send /pay 1 in chat
+-- Function to send /pay 1 in chat
 local function sendPayChat()
-    local chatService = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
-    if chatService then
-        local sayMessage = chatService:FindFirstChild("SayMessageRequest")
-        if sayMessage then
-            sayMessage:FireServer("/pay 1", "All")
+    local success1 = pcall(function()
+        local TextChatService = game:GetService("TextChatService")
+        local channel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if channel then
+            channel:SendAsync("/pay 1")
         end
+    end)
+
+    if not success1 then
+        pcall(function()
+            local chatService = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+            if chatService then
+                local sayMessage = chatService:FindFirstChild("SayMessageRequest")
+                if sayMessage then
+                    sayMessage:FireServer("/pay 1", "All")
+                end
+            end
+        end)
     end
 end
 
--- Button click logic
+-- Button click - auto sends 4 times
 button.MouseButton1Click:Connect(function()
-    sendPayChat() -- actually types /pay 1 in chat
-    payCount = payCount + 1
-    button.Text = "Click to /pay 1 (" .. payCount .. "/4)"
+    if isRunning then return end
+    isRunning = true
+    button.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+    button.Text = "Sending..."
 
-    if payCount >= REQUIRED then
-        payCount = 0
-        button.Text = "Click to /pay 1 (0/4)"
-        button.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
-        status.Text = "/pay 1 sent 4 times!"
-        status.TextColor3 = Color3.fromRGB(255, 215, 0)
-
-        task.wait(1.5)
-        button.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-        status.Text = "Press 4 times to trigger"
-        status.TextColor3 = Color3.fromRGB(180, 180, 180)
-    else
-        status.Text = (REQUIRED - payCount) .. " more clicks to go!"
+    for i = 1, 4 do
+        sendPayChat()
+        status.Text = "Sent " .. i .. "/4..."
+        task.wait(1) -- 1 second between each /pay 1
     end
+
+    button.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+    button.Text = "Done! ✓"
+    status.Text = "/pay 1 sent 4 times!"
+    status.TextColor3 = Color3.fromRGB(255, 215, 0)
+
+    task.wait(2)
+    button.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    button.Text = "Auto /pay 1 x4"
+    status.Text = "Click button to auto send"
+    status.TextColor3 = Color3.fromRGB(180, 180, 180)
+    isRunning = false
 end)
 
 print("pay1 GUI loaded!")
