@@ -27,7 +27,7 @@ button.Size = UDim2.new(1, -20, 0, 40)
 button.Position = UDim2.new(0, 10, 0, 10)
 button.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Text = "Click to /pay1 (0/4)"
+button.Text = "Click to /pay 1 (0/4)"
 button.Font = Enum.Font.GothamBold
 button.TextSize = 16
 button.BorderSizePixel = 0
@@ -47,31 +47,36 @@ status.Font = Enum.Font.Gotham
 status.TextSize = 12
 status.Parent = frame
 
+-- Function to actually send /pay 1 in chat
+local function sendPayChat()
+    local chatService = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+    if chatService then
+        local sayMessage = chatService:FindFirstChild("SayMessageRequest")
+        if sayMessage then
+            sayMessage:FireServer("/pay 1", "All")
+        end
+    end
+end
+
 -- Button click logic
 button.MouseButton1Click:Connect(function()
+    sendPayChat() -- actually types /pay 1 in chat
     payCount = payCount + 1
-    button.Text = "Click to /pay1 (" .. payCount .. "/4)"
+    button.Text = "Click to /pay 1 (" .. payCount .. "/4)"
 
     if payCount >= REQUIRED then
         payCount = 0
-        button.Text = "Click to /pay1 (0/4)"
+        button.Text = "Click to /pay 1 (0/4)"
         button.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
-        status.Text = "Payment triggered!"
+        status.Text = "/pay 1 sent 4 times!"
         status.TextColor3 = Color3.fromRGB(255, 215, 0)
-
-        game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
-            Text = "[pay1] Payment triggered! (x4 reached)",
-            Color = Color3.fromRGB(255, 215, 0),
-            Font = Enum.Font.GothamBold,
-            FontSize = Enum.FontSize.Size18
-        })
 
         task.wait(1.5)
         button.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
         status.Text = "Press 4 times to trigger"
         status.TextColor3 = Color3.fromRGB(180, 180, 180)
     else
-        status.Text = "Keep clicking! " .. (REQUIRED - payCount) .. " more to go"
+        status.Text = (REQUIRED - payCount) .. " more clicks to go!"
     end
 end)
 
