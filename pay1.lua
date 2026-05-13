@@ -109,7 +109,7 @@ local function openSafe()
 end
 
 local function depositMoney()
-    status.Text = "💰 Putting money in..."
+    status.Text = "💰 Putting money in safe..."
     status.TextColor3 = Color3.fromRGB(0, 120, 255)
     pcall(function()
         Events:WaitForChild("Safe"):FireServer("Small Cash", userId, "In")
@@ -134,24 +134,14 @@ startBtn.MouseButton1Click:Connect(function()
 
     task.spawn(function()
         while isRunning do
-            withdrawMoney() -- 1. take money out first
-            task.wait(1)
-            openSafe()      -- 2. open safe, waits 2 seconds
-            depositMoney()  -- 3. put money in, waits 1 second
-            withdrawMoney() -- 4. take money out, waits 1 second
-
-            -- 5. send /pay 1 x4
-            status.Text = "💬 Sending /pay 1..."
-            status.TextColor3 = Color3.fromRGB(180, 180, 180)
-            for i = 1, 4 do
-                if not isRunning then break end
-                sendPayChat()
-                task.wait(0.3)
-            end
+            withdrawMoney() -- STEP 1: take money out
+            openSafe()      -- STEP 2: open safe (waits 2s)
+            depositMoney()  -- STEP 3: put money in safe (waits 1s)
+            withdrawMoney() -- STEP 4: take money out (waits 1s)
+            -- STEP 5: repeat (loop continues)
 
             totalCycles = totalCycles + 1
             cycleLabel.Text = "Cycles: " .. totalCycles
-            task.wait(1)
         end
     end)
 end)
