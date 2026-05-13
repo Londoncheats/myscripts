@@ -5,6 +5,7 @@ local RS = game:GetService("ReplicatedStorage")
 local Events = RS:WaitForChild("Events")
 
 local isRunning = false
+local totalCycles = 0
 
 -- GUI
 local screenGui = Instance.new("ScreenGui")
@@ -13,7 +14,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 220)
+frame.Size = UDim2.new(0, 220, 0, 180)
 frame.Position = UDim2.new(0.5, -110, 0.8, 0)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BorderSizePixel = 0
@@ -25,7 +26,7 @@ title.Size = UDim2.new(1, 0, 0, 25)
 title.Position = UDim2.new(0, 0, 0, 5)
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255, 215, 0)
-title.Text = "🏦 Trap N Bang Auto"
+title.Text = "🏦 Trap N Bang Auto Farm"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
 title.Parent = frame
@@ -40,85 +41,43 @@ status.Font = Enum.Font.Gotham
 status.TextSize = 12
 status.Parent = frame
 
--- Open Safe button
-local openBtn = Instance.new("TextButton")
-openBtn.Size = UDim2.new(1, -20, 0, 35)
-openBtn.Position = UDim2.new(0, 10, 0, 55)
-openBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-openBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-openBtn.Text = "🔓 Open Safe"
-openBtn.Font = Enum.Font.GothamBold
-openBtn.TextSize = 14
-openBtn.BorderSizePixel = 0
-openBtn.Parent = frame
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 8)
+local cycleLabel = Instance.new("TextLabel")
+cycleLabel.Size = UDim2.new(1, -20, 0, 20)
+cycleLabel.Position = UDim2.new(0, 10, 0, 50)
+cycleLabel.BackgroundTransparency = 1
+cycleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+cycleLabel.Text = "Cycles: 0"
+cycleLabel.Font = Enum.Font.GothamBold
+cycleLabel.TextSize = 12
+cycleLabel.Parent = frame
 
--- Deposit button
-local depositBtn = Instance.new("TextButton")
-depositBtn.Size = UDim2.new(0.5, -15, 0, 35)
-depositBtn.Position = UDim2.new(0, 10, 0, 100)
-depositBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-depositBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-depositBtn.Text = "💰 Deposit"
-depositBtn.Font = Enum.Font.GothamBold
-depositBtn.TextSize = 13
-depositBtn.BorderSizePixel = 0
-depositBtn.Parent = frame
-Instance.new("UICorner", depositBtn).CornerRadius = UDim.new(0, 8)
-
--- Withdraw button
-local withdrawBtn = Instance.new("TextButton")
-withdrawBtn.Size = UDim2.new(0.5, -15, 0, 35)
-withdrawBtn.Position = UDim2.new(0.5, 5, 0, 100)
-withdrawBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-withdrawBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-withdrawBtn.Text = "💸 Withdraw"
-withdrawBtn.Font = Enum.Font.GothamBold
-withdrawBtn.TextSize = 13
-withdrawBtn.BorderSizePixel = 0
-withdrawBtn.Parent = frame
-Instance.new("UICorner", withdrawBtn).CornerRadius = UDim.new(0, 8)
-
--- Auto Pay Start
+-- Start button
 local startBtn = Instance.new("TextButton")
-startBtn.Size = UDim2.new(0.5, -15, 0, 35)
-startBtn.Position = UDim2.new(0, 10, 0, 145)
-startBtn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+startBtn.Size = UDim2.new(1, -20, 0, 40)
+startBtn.Position = UDim2.new(0, 10, 0, 80)
+startBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
 startBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-startBtn.Text = "▶ Auto Pay"
+startBtn.Text = "▶ START AUTO FARM"
 startBtn.Font = Enum.Font.GothamBold
-startBtn.TextSize = 13
+startBtn.TextSize = 15
 startBtn.BorderSizePixel = 0
 startBtn.Parent = frame
 Instance.new("UICorner", startBtn).CornerRadius = UDim.new(0, 8)
 
 -- Stop button
 local stopBtn = Instance.new("TextButton")
-stopBtn.Size = UDim2.new(0.5, -15, 0, 35)
-stopBtn.Position = UDim2.new(0.5, 5, 0, 145)
+stopBtn.Size = UDim2.new(1, -20, 0, 40)
+stopBtn.Position = UDim2.new(0, 10, 0, 130)
 stopBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-stopBtn.Text = "■ Stop"
+stopBtn.Text = "■ STOP"
 stopBtn.Font = Enum.Font.GothamBold
-stopBtn.TextSize = 13
+stopBtn.TextSize = 15
 stopBtn.BorderSizePixel = 0
 stopBtn.Parent = frame
 Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0, 8)
 
--- Auto All button
-local autoAllBtn = Instance.new("TextButton")
-autoAllBtn.Size = UDim2.new(1, -20, 0, 35)
-autoAllBtn.Position = UDim2.new(0, 10, 0, 190)
-autoAllBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
-autoAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoAllBtn.Text = "⚡ Auto Do Everything"
-autoAllBtn.Font = Enum.Font.GothamBold
-autoAllBtn.TextSize = 13
-autoAllBtn.BorderSizePixel = 0
-autoAllBtn.Parent = frame
-Instance.new("UICorner", autoAllBtn).CornerRadius = UDim.new(0, 8)
-
--- Functions
+-- Send /pay 1
 local function sendPayChat()
     pcall(function()
         local TextChatService = game:GetService("TextChatService")
@@ -128,7 +87,7 @@ local function sendPayChat()
         end
     end)
     pcall(function()
-        local chatService = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+        local chatService = RS:FindFirstChild("DefaultChatSystemChatEvents")
         if chatService then
             local sayMessage = chatService:FindFirstChild("SayMessageRequest")
             if sayMessage then
@@ -138,8 +97,9 @@ local function sendPayChat()
     end)
 end
 
+-- Open safe
 local function openSafe()
-    status.Text = "Opening safe..."
+    status.Text = "🔓 Opening safe..."
     status.TextColor3 = Color3.fromRGB(0, 255, 128)
     pcall(function()
         local prompt = workspace:WaitForChild("Safes")
@@ -149,79 +109,73 @@ local function openSafe()
         Events:WaitForChild("OpenSafe"):FireServer(prompt)
     end)
     task.wait(1)
-    status.Text = "Safe opened!"
 end
 
-local function deposit()
-    status.Text = "Depositing..."
+-- Put money IN safe
+local function depositMoney()
+    status.Text = "💰 Putting money in..."
+    status.TextColor3 = Color3.fromRGB(0, 120, 255)
     pcall(function()
-        Events:WaitForChild("DepositMoney"):FireServer()
+        Events:WaitForChild("Safe"):FireServer("Small Cash", "17786532511854", "In")
     end)
-    pcall(function()
-        Events:WaitForChild("Deposit"):FireServer()
-    end)
-    pcall(function()
-        Events:WaitForChild("SafeDeposit"):FireServer()
-    end)
-    task.wait(0.5)
-    status.Text = "Deposited!"
+    task.wait(1)
 end
 
-local function withdraw()
-    status.Text = "Withdrawing..."
+-- Take money OUT of safe
+local function withdrawMoney()
+    status.Text = "💸 Taking money out..."
+    status.TextColor3 = Color3.fromRGB(255, 100, 0)
     pcall(function()
-        Events:WaitForChild("WithdrawMoney"):FireServer()
+        Events:WaitForChild("Safe"):FireServer("Small Cash", "17786532511854", "Out")
     end)
-    pcall(function()
-        Events:WaitForChild("Withdraw"):FireServer()
-    end)
-    pcall(function()
-        Events:WaitForChild("SafeWithdraw"):FireServer()
-    end)
-    task.wait(0.5)
-    status.Text = "Withdrawn!"
+    task.wait(1)
 end
 
--- Button connections
-openBtn.MouseButton1Click:Connect(openSafe)
-depositBtn.MouseButton1Click:Connect(deposit)
-withdrawBtn.MouseButton1Click:Connect(withdraw)
-
--- Auto Pay
-local totalSent = 0
+-- Main auto farm loop
 startBtn.MouseButton1Click:Connect(function()
     if isRunning then return end
     isRunning = true
     startBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    startBtn.Text = "Running..."
+
     task.spawn(function()
         while isRunning do
-            sendPayChat()
-            totalSent = totalSent + 1
-            status.Text = "Sent: " .. totalSent
-            task.wait(0.1)
+            -- Step 1: Open safe
+            openSafe()
+            task.wait(1)
+
+            -- Step 2: Put money in
+            depositMoney()
+            task.wait(1)
+
+            -- Step 3: Take money out
+            withdrawMoney()
+            task.wait(1)
+
+            -- Step 4: Send /pay 1 x4
+            status.Text = "💬 Sending /pay 1..."
+            status.TextColor3 = Color3.fromRGB(180, 180, 180)
+            for i = 1, 4 do
+                if not isRunning then break end
+                sendPayChat()
+                task.wait(0.5)
+            end
+
+            -- Update cycle count
+            totalCycles = totalCycles + 1
+            cycleLabel.Text = "Cycles: " .. totalCycles
+            task.wait(1)
         end
     end)
 end)
 
+-- Stop
 stopBtn.MouseButton1Click:Connect(function()
     isRunning = false
-    startBtn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    startBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    startBtn.Text = "▶ START AUTO FARM"
     status.Text = "Stopped"
     status.TextColor3 = Color3.fromRGB(180, 180, 180)
 end)
 
--- Auto Do Everything
-autoAllBtn.MouseButton1Click:Connect(function()
-    task.spawn(function()
-        openSafe()
-        task.wait(2)
-        deposit()
-        task.wait(1)
-        withdraw()
-        task.wait(1)
-        status.Text = "All done!"
-        status.TextColor3 = Color3.fromRGB(255, 215, 0)
-    end)
-end)
-
-print("Trap N Bang GUI loaded!")
+print("Trap N Bang Auto Farm loaded!")
