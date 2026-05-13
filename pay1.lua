@@ -134,11 +134,13 @@ startBtn.MouseButton1Click:Connect(function()
 
     task.spawn(function()
         while isRunning do
-            openSafe()      -- open safe then waits 2 seconds
-            withdrawMoney() -- take money out then waits 1 second
-            depositMoney()  -- put money in then waits 1 second
-            withdrawMoney() -- take money out again then waits 1 second
+            withdrawMoney() -- 1. take money out first
+            task.wait(1)
+            openSafe()      -- 2. open safe, waits 2 seconds
+            depositMoney()  -- 3. put money in, waits 1 second
+            withdrawMoney() -- 4. take money out, waits 1 second
 
+            -- 5. send /pay 1 x4
             status.Text = "💬 Sending /pay 1..."
             status.TextColor3 = Color3.fromRGB(180, 180, 180)
             for i = 1, 4 do
